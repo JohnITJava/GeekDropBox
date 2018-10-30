@@ -1,0 +1,26 @@
+.myBtn{
+    -fx-background-color: #5dccff;
+    -fx-font-weight: bold;
+}
+
+.myBtn:hover{
+    -fx-background-color: #5fc0f4;
+}
+
+.text-field{
+    -fx-prompt-text-fill: #abb0cc;
+    -fx-font-weight: bold;
+}
+
+.text-area {
+    -fx-background-color: rgb(244, 244, 244);
+    -fx-font-size: 14px;
+    -fx-text-fill: #002185;
+
+}
+
+.text-input {
+    -fx-text-fill: -fx-text-inner-color;
+}
+
+/*F4F4F4*/
