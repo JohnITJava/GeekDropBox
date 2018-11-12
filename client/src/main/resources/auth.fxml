@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<VBox fx:id="mainVBox" alignment="center" stylesheets="/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.AuthController">
+    <TextField fx:id="logF" HBox.hgrow ="ALWAYS" promptText="Enter your login" prefHeight="35"/>
+    <PasswordField HBox.hgrow ="ALWAYS" fx:id="passF" promptText="Enter your password" prefHeight="35"/>
+    <HBox alignment="BOTTOM_CENTER" spacing="5">
+        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS" onAction="#logIn" prefHeight="30">Log In</Button>
+        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS" onAction="#register" prefHeight="30">Register</Button>
+        <padding>
+            <Insets bottom="5.0" left="5" right="5.0" top="5.0" />
+        </padding>
+    </HBox>
+    <Label fx:id="hint" prefHeight="35" wrapText="true" styleClass="labelHint"/>
+    <padding>
+        <Insets bottom="5.0" left="5" right="5.0" top="5.0" />
+    </padding>
+</VBox>

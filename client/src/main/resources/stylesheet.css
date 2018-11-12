@@ -23,4 +23,10 @@
     -fx-text-fill: -fx-text-inner-color;
 }
 
+.labelHint{
+    -fx-font-weight: bold;
+    -fx-text-fill: #002086;
+    -fx-text-alignment: center;
+}
+
 /*F4F4F4*/

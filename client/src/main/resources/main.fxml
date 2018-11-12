@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="mainVBox" alignment="center" stylesheets="/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.112"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.MainController">
+    <ListView fx:id="localFilesList" VBox.vgrow="ALWAYS">
+
+    </ListView>
+    <ListView fx:id="serverFilesList" VBox.vgrow="ALWAYS">
+
+    </ListView>
+    <HBox alignment="BOTTOM_CENTER" spacing="5">
+        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS">UpLoad</Button>
+        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS">DownLoad</Button>
+        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS">Rename</Button>
+        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS">Delete</Button>
+        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS" onAction="#logOffSystem">LogOFF</Button>
+        <padding>
+            <Insets bottom="5.0" left="5" right="5.0" top="5.0"/>
+        </padding>
+    </HBox>
+    <padding>
+        <Insets bottom="5.0" left="5" right="5.0" top="5.0"/>
+    </padding>
+</VBox>
