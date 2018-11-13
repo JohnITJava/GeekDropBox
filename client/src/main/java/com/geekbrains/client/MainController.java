@@ -18,7 +18,6 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ResourceBundle;
@@ -33,11 +32,9 @@ public class MainController implements Initializable {
     @FXML
     ListView<String> localFilesList, serverFilesList;
 
-    private AuthObject authObject;
+    private String userName;
 
-    public void setAuthObject(AuthObject authObject) {
-        this.authObject = authObject;
-    }
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -46,19 +43,30 @@ public class MainController implements Initializable {
             Platform.exit();
         }));
 
-        Platform.runLater(() -> {
-                ((Stage) mainVBox.getScene().getWindow()).setTitle("Welcome to DropBox " + authObject.getLogin());
-        });
-
         Thread t = new Thread(() -> {
             try {
                 while (true) {
-                    AbstractObject am = Network.readObject();
-                    if (am instanceof FileObject) {
-                        FileObject fm = (FileObject) am;
+                    System.out.println("Ready for getting");
+                    AbstractObject income = Network.readObject();
+                    System.out.println("Get " + income.getClass().toString());
+
+                    if (income instanceof UserObject){
+                        UserObject uo = (UserObject) income;
+                        this.userName = uo.getName();
+                        updateTitle(userName);
+                    }
+                    if (income instanceof FileObject) {
+                        FileObject fm = (FileObject) income;
                         Files.write(Paths.get("client_storage"
                                 + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
                         refreshLocalFilesList();
+                    }
+                    if(income instanceof FilesListObject){
+                        System.out.println(658658);
+                        FilesListObject flo = (FilesListObject) income;
+                        flo.getFileNamesList().stream().map(p ->
+                                p.getFileName().toString()).forEach(o ->
+                                serverFilesList.getItems().add(o));
                     }
                 }
             } catch (ClassNotFoundException | IOException e) {
@@ -70,18 +78,23 @@ public class MainController implements Initializable {
 
         t.setDaemon(true);
         t.start();
-        localFilesList.setItems(FXCollections.observableArrayList());
+        getUserObject();
         serverFilesList.setItems(FXCollections.observableArrayList());
-        refreshLocalFilesList();
         refreshServerFilesList();
+        localFilesList.setItems(FXCollections.observableArrayList());
+        refreshLocalFilesList();
+
     }
 
     public void pressOnDownloadBtn(ActionEvent actionEvent) {
-        Path path = Paths.get(authObject.getLogin());
         if (tfFileName.getLength() > 0) {
-            Network.sendObject(new FileRequest(path, tfFileName.getText()));
+            Network.sendObject(new FileRequest(tfFileName.getText()));
             tfFileName.clear();
         }
+    }
+
+    public void pressOnUpdateBtn(){
+        refreshServerFilesList();
     }
 
     public void refreshLocalFilesList() {
@@ -109,8 +122,8 @@ public class MainController implements Initializable {
     }
 
     public void refreshServerFilesList(){
-        Path path = Paths.get(authObject.getLogin());
-        Network.sendObject(new FilesListRequest(path));
+        serverFilesList.getItems().clear();
+        Network.sendObject(new FilesListRequest());
     }
 
     public void logOffSystem(){
@@ -125,6 +138,22 @@ public class MainController implements Initializable {
 
         } catch (IOException e){
             e.printStackTrace();
+        }
+    }
+
+    public void updateTitle(String name){
+        Platform.runLater(() -> ((Stage) mainVBox.getScene().getWindow()).setTitle("Welcome to DropBox " + name));
+    }
+
+    public void getUserObject(){
+        Network.sendObject(new UserRequest());
+    }
+
+    public static void updateGUI(Runnable r){
+        if (Platform.isFxApplicationThread()){
+            r.run();
+        } else {
+            Platform.runLater(r);
         }
     }
 }

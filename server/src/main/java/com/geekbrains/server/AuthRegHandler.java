@@ -17,19 +17,24 @@ public class AuthRegHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object income) throws Exception {
         try {
+
             if (income == null) {
                 return;
             }
+
             if (income instanceof AuthRequest) {
                 AuthRequest arr = (AuthRequest) income;
                 if (SQLHandler.tryToLogIn(((AuthRequest) income).getLogin(), ((AuthRequest) income).getPassword())){
                     AuthObject outcome = new AuthObject(((AuthRequest) income).getLogin(), true);
                     ctx.writeAndFlush(outcome);
+                    ctx.pipeline().get(MainHandler.class).setUserName(((AuthRequest) income).getLogin());
+
                 } else {
                     AuthObject outcome = new AuthObject(((AuthRequest) income).getLogin(),false);
                     ctx.writeAndFlush(outcome);
                 }
             }
+
             if (income instanceof RegRequest){
                 RegRequest arr = (RegRequest) income;
                 if (SQLHandler.tryToRegister(((RegRequest) income).getLogin(), ((RegRequest) income).getPassword())){
@@ -42,6 +47,9 @@ public class AuthRegHandler extends ChannelInboundHandlerAdapter {
                     ctx.writeAndFlush(outcome);
                 }
             }
+
+            ctx.fireChannelRead(income);
+
         }
         finally
     {

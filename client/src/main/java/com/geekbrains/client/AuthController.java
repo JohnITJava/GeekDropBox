@@ -48,7 +48,8 @@ public class AuthController implements Initializable{
                         AuthObject ao = (AuthObject) income;
                         if (ao.isAuthorized()) {
                             textInGUI("SUCCESS. Loading the system, please, wait...");
-                            Platform.runLater(() -> switchSceneToBox(ao));
+                            Platform.runLater(() -> switchSceneToBox());
+                            break;
                         } else {
                             textInGUI("Wrong combination of login and pass");
                         }
@@ -66,8 +67,6 @@ public class AuthController implements Initializable{
                 }
             } catch (ClassNotFoundException | IOException e) {
                 e.printStackTrace();
-            } finally {
-                Network.stop();
             }
         });
         t.setDaemon(true);
@@ -94,15 +93,13 @@ public class AuthController implements Initializable{
         });
     }
 
-    public void switchSceneToBox(AuthObject obj) {
+    public void switchSceneToBox() {
         Parent root = null;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/main.fxml"));
             root = (Pane) loader.load();
             Scene scene = new Scene(root, 400, 400);
             ((Stage) mainVBox.getScene().getWindow()).setScene(scene);
-            MainController mainController = loader.getController();
-            mainController.setAuthObject(obj);
 
         } catch (IOException e){
             e.printStackTrace();
