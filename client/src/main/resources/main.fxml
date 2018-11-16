@@ -6,25 +6,28 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.control.Label?>
 <VBox fx:id="mainVBox" alignment="center" stylesheets="/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.112"
       xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.MainController">
-    <ListView fx:id="localFilesList" VBox.vgrow="ALWAYS">
-
-    </ListView>
+    <HBox alignment="CENTER" minHeight="30" styleClass="headArea"><Label alignment="CENTER" styleClass="labelHint">Server Storage</Label></HBox>
     <ListView fx:id="serverFilesList" VBox.vgrow="ALWAYS">
 
     </ListView>
+    <HBox alignment="CENTER" minHeight="30" styleClass="headArea"><Label alignment="CENTER" styleClass="labelHint">Local Storage</Label></HBox>
+    <ListView fx:id="localFilesList" VBox.vgrow="ALWAYS">
+
+    </ListView>
     <HBox alignment="BOTTOM_CENTER" spacing="5">
-        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS">UpLoad</Button>
+        <Button maxWidth="Infinity" styleClass="UpBtn" HBox.hgrow="ALWAYS" onAction="#pressOnUploadBtn">UpLoad</Button>
         <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS" onAction="#pressOnDownloadBtn">DownLoad</Button>
         <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS" onAction="#pressOnUpdateBtn">Update</Button>
-        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS">Delete</Button>
-        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS" onAction="#logOffSystem">LogOFF</Button>
+        <Button maxWidth="Infinity" styleClass="DelBtn" HBox.hgrow="ALWAYS" onAction="#pressOnDeleteBtn">Delete</Button>
+        <Button maxWidth="Infinity" styleClass="logOffBtn" HBox.hgrow="ALWAYS" onAction="#logOffSystem">LogOFF</Button>
         <padding>
             <Insets bottom="5.0" left="5" right="5.0" top="5.0"/>
         </padding>
     </HBox>
     <padding>
-        <Insets bottom="5.0" left="5" right="5.0" top="5.0"/>
+        <Insets bottom="5.0" left="5" right="5.0"/>
     </padding>
 </VBox>

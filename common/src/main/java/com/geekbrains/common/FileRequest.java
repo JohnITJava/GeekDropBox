@@ -10,6 +10,7 @@ public class FileRequest extends AbstractObject {
     }
 
     public FileRequest(String filename) {
+        System.out.println("Request created");
         this.filename = filename;
     }
 }

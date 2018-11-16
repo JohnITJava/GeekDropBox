@@ -4,10 +4,9 @@ import com.geekbrains.common.*;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
+import javafx.application.Platform;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +33,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (income instanceof FileRequest) {
+                System.out.println("Request on server");
                 FileRequest fr = (FileRequest) income;
                 if (Files.exists(Paths.get("server_storage/" + userName + "/" + fr.getFilename()))) {
                     FileObject fm = new FileObject(Paths.get("server_storage/" + userName + "/" + fr.getFilename()));
@@ -42,13 +42,21 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (income instanceof FilesListRequest){
-                System.out.println(33);
-                List<Path> pathList = Files.list(Paths.get("server_storage/" + userName + "/")).collect(Collectors.toList());
-                FilesListObject flo = new FilesListObject(pathList);
-                System.out.println(34);
+                List<String> filesList = Files.list(Paths.get("server_storage/" + userName + "/"))
+                        .collect(Collectors.toList())
+                        .stream()
+                        .map(p -> p.getFileName().toString())
+                        .collect(Collectors.toList());
+                FilesListObject flo = new FilesListObject(filesList);
                 ctx.writeAndFlush(flo);
-                System.out.println("Отправлен");
             }
+
+            if (income instanceof FileObject){
+                FileObject fo = (FileObject) income;
+                Files.write(Paths.get("server_storage/" + userName + "/" + fo.getFilename()), fo.getData(), StandardOpenOption.CREATE);
+            }
+
+            ctx.fireChannelRead(income);
 
         } finally {
             ReferenceCountUtil.release(income);
@@ -59,4 +67,5 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.close();
     }
+
 }

@@ -7,6 +7,33 @@
     -fx-background-color: #5fc0f4;
 }
 
+.UpBtn{
+    -fx-background-color: #0fff00;
+    -fx-font-weight: bold;
+}
+
+.UpBtn:hover{
+    -fx-background-color: #10d900;
+}
+
+.DelBtn{
+    -fx-background-color: #ffc200;
+    -fx-font-weight: bold;
+}
+
+.DelBtn:hover{
+    -fx-background-color: #f2b500;
+}
+
+.logOffBtn{
+    -fx-background-color: #ff000a;
+    -fx-font-weight: bold;
+}
+
+.logOffBtn:hover{
+    -fx-background-color: #d0000b;
+}
+
 .text-field{
     -fx-prompt-text-fill: #abb0cc;
     -fx-font-weight: bold;
@@ -27,6 +54,10 @@
     -fx-font-weight: bold;
     -fx-text-fill: #002086;
     -fx-text-alignment: center;
+}
+
+.headArea{
+    -fx-background-color: #5dccff;
 }
 
 /*F4F4F4*/

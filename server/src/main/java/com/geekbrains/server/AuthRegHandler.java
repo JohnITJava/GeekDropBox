@@ -1,19 +1,16 @@
 package com.geekbrains.server;
 
-import com.geekbrains.common.AuthObject;
-import com.geekbrains.common.AuthRequest;
-import com.geekbrains.common.RegObject;
-import com.geekbrains.common.RegRequest;
+import com.geekbrains.common.*;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.commons.codec.digest.DigestUtils;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 public class AuthRegHandler extends ChannelInboundHandlerAdapter {
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object income) throws Exception {
         try {
@@ -24,7 +21,7 @@ public class AuthRegHandler extends ChannelInboundHandlerAdapter {
 
             if (income instanceof AuthRequest) {
                 AuthRequest arr = (AuthRequest) income;
-                if (SQLHandler.tryToLogIn(((AuthRequest) income).getLogin(), ((AuthRequest) income).getPassword())){
+                if (SQLHandler.tryToLogIn(((AuthRequest) income).getLogin(), toHash(((AuthRequest) arr).getPassword()))){
                     AuthObject outcome = new AuthObject(((AuthRequest) income).getLogin(), true);
                     ctx.writeAndFlush(outcome);
                     ctx.pipeline().get(MainHandler.class).setUserName(((AuthRequest) income).getLogin());
@@ -37,7 +34,7 @@ public class AuthRegHandler extends ChannelInboundHandlerAdapter {
 
             if (income instanceof RegRequest){
                 RegRequest arr = (RegRequest) income;
-                if (SQLHandler.tryToRegister(((RegRequest) income).getLogin(), ((RegRequest) income).getPassword())){
+                if (SQLHandler.tryToRegister(((RegRequest) income).getLogin(), toHash(((RegRequest) arr).getPassword()))){
                     RegObject outcome = new RegObject(true);
                     String path = "server_storage/" + ((RegRequest) income).getLogin();
                     Files.createDirectory(Paths.get(path));
@@ -61,5 +58,9 @@ public class AuthRegHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.close();
+    }
+
+    public static String toHash(String pass) {
+        return DigestUtils.md5Hex(pass);
     }
 }

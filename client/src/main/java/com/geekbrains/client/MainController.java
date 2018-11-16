@@ -27,13 +27,9 @@ public class MainController implements Initializable {
     VBox mainVBox;
 
     @FXML
-    TextField tfFileName;
-
-    @FXML
     ListView<String> localFilesList, serverFilesList;
 
     private String userName;
-
 
 
     @Override
@@ -46,27 +42,23 @@ public class MainController implements Initializable {
         Thread t = new Thread(() -> {
             try {
                 while (true) {
-                    System.out.println("Ready for getting");
-                    AbstractObject income = Network.readObject();
-                    System.out.println("Get " + income.getClass().toString());
 
-                    if (income instanceof UserObject){
+                    AbstractObject income = Network.readObject();
+
+                    if (income instanceof UserObject) {
                         UserObject uo = (UserObject) income;
                         this.userName = uo.getName();
                         updateTitle(userName);
                     }
                     if (income instanceof FileObject) {
                         FileObject fm = (FileObject) income;
-                        Files.write(Paths.get("client_storage"
+                        Files.write(Paths.get("client_storage/"
                                 + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
                         refreshLocalFilesList();
                     }
-                    if(income instanceof FilesListObject){
-                        System.out.println(658658);
+                    if (income instanceof FilesListObject) {
                         FilesListObject flo = (FilesListObject) income;
-                        flo.getFileNamesList().stream().map(p ->
-                                p.getFileName().toString()).forEach(o ->
-                                serverFilesList.getItems().add(o));
+                        serverFilesList.getItems().addAll(flo.getFileNamesList());
                     }
                 }
             } catch (ClassNotFoundException | IOException e) {
@@ -87,46 +79,35 @@ public class MainController implements Initializable {
     }
 
     public void pressOnDownloadBtn(ActionEvent actionEvent) {
-        if (tfFileName.getLength() > 0) {
-            Network.sendObject(new FileRequest(tfFileName.getText()));
-            tfFileName.clear();
-        }
+        String choosenFile = serverFilesList.getFocusModel().getFocusedItem();
+        System.out.println(choosenFile);
+        Network.sendObject(new FileRequest(choosenFile));
     }
 
-    public void pressOnUpdateBtn(){
-        refreshServerFilesList();
+    public void pressOnUpdateBtn() {
+            refreshServerFilesList();
+            refreshLocalFilesList();
     }
 
     public void refreshLocalFilesList() {
-        if (Platform.isFxApplicationThread()) {
+        updateGUI(() -> {
+            localFilesList.getItems().clear();
             try {
-                localFilesList.getItems().clear();
                 Files.list(Paths.get("client_storage")).map(p ->
                         p.getFileName().toString()).forEach(o ->
                         localFilesList.getItems().add(o));
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
-            Platform.runLater(() -> {
-                try {
-                    localFilesList.getItems().clear();
-                    Files.list(Paths.get("client_storage")).map(p ->
-                            p.getFileName().toString()).forEach(o ->
-                            localFilesList.getItems().add(o));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        }
+        });
     }
 
-    public void refreshServerFilesList(){
+    public void refreshServerFilesList() {
         serverFilesList.getItems().clear();
         Network.sendObject(new FilesListRequest());
     }
 
-    public void logOffSystem(){
+    public void logOffSystem() {
         Parent root = null;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/auth.fxml"));
@@ -136,24 +117,34 @@ public class MainController implements Initializable {
             stage.setScene(scene);
             stage.setTitle("GeekDropBox");
 
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void updateTitle(String name){
+    public void updateTitle(String name) {
         Platform.runLater(() -> ((Stage) mainVBox.getScene().getWindow()).setTitle("Welcome to DropBox " + name));
     }
 
-    public void getUserObject(){
+    public void getUserObject() {
         Network.sendObject(new UserRequest());
     }
 
-    public static void updateGUI(Runnable r){
-        if (Platform.isFxApplicationThread()){
-            r.run();
+    public static void updateGUI(Runnable r) {
+        if (Platform.isFxApplicationThread()) {
+                r.run();
         } else {
             Platform.runLater(r);
         }
+    }
+
+    public void pressOnUploadBtn(ActionEvent actionEvent) throws IOException {
+        String fileName = localFilesList.getFocusModel().getFocusedItem();
+        Network.sendObject(new FileObject(Paths.get("client_storage/" + fileName)));
+    }
+
+
+    public void pressOnDeleteBtn(ActionEvent actionEvent) {
+
     }
 }

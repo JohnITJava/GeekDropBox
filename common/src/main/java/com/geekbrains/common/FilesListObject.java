@@ -5,14 +5,13 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class FilesListObject extends AbstractObject{
-    private List<Path> fileNamesList;
+    private List<String> fileNamesList;
 
-    public List<Path> getFileNamesList() {
+    public List<String> getFileNamesList() {
         return fileNamesList;
     }
 
-    public FilesListObject(List<Path> fileNamesList) throws IOException {
+    public FilesListObject(List<String> fileNamesList) {
         this.fileNamesList = fileNamesList;
-        System.out.println("Obj creat");
     }
 }
