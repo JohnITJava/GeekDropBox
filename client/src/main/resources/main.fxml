@@ -7,16 +7,22 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableView?>
 <VBox fx:id="mainVBox" alignment="center" stylesheets="/stylesheet.css" xmlns="http://javafx.com/javafx/8.0.112"
       xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.MainController">
     <HBox alignment="CENTER" minHeight="30" styleClass="headArea"><Label alignment="CENTER" styleClass="labelHint">Server Storage</Label></HBox>
-    <ListView fx:id="serverFilesList" VBox.vgrow="ALWAYS">
-
-    </ListView>
+    <TableView fx:id="serverFilesTable" VBox.vgrow="ALWAYS"/>
     <HBox alignment="CENTER" minHeight="30" styleClass="headArea"><Label alignment="CENTER" styleClass="labelHint">Local Storage</Label></HBox>
-    <ListView fx:id="localFilesList" VBox.vgrow="ALWAYS">
-
-    </ListView>
+    <HBox>
+    <TableView fx:id="localFilesTable" VBox.vgrow="ALWAYS"/>
+    <Label fx:id="filesDragAndDrop" alignment="CENTER" prefHeight="150" prefWidth="150" text="Drop files here!" wrapText="true" styleClass="drugNdrop"/>
+    </HBox>
+    <HBox>
+        <padding>
+            <Insets left="2" right="2.0" top="2"/>
+        </padding>
+    <Label fx:id="loadLabel" alignment="CENTER" styleClass="loadLab" HBox.hgrow="ALWAYS" prefWidth="400"/>
+    </HBox>
     <HBox alignment="BOTTOM_CENTER" spacing="5">
         <Button fx:id="uplBtn" maxWidth="Infinity" styleClass="UpBtn" HBox.hgrow="ALWAYS" onAction="#pressOnUploadBtn">UpLoad</Button>
         <Button fx:id="dwnlBtn" maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS" onAction="#pressOnDownloadBtn">DownLoad</Button>

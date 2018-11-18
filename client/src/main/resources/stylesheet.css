@@ -58,6 +58,19 @@
 
 .headArea{
     -fx-background-color: #5dccff;
+    -fx-font-weight: bold;
 }
 
-/*F4F4F4*/
+.drugNdrop {
+    -fx-background-color: rgba(93, 204, 255, 0.30);
+
+}
+
+.drugNdrop:hover {
+    -fx-background-color: rgba(93, 204, 255, 0.51);
+}
+
+.loadLab {
+    -fx-background-color: rgba(93, 204, 255, 0.30);
+    -fx-font-weight: bold;
+}

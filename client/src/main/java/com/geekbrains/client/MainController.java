@@ -1,10 +1,10 @@
 package com.geekbrains.client;
 
 import com.geekbrains.common.*;
+import com.geekbrains.common.File;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,16 +12,18 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.*;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
@@ -29,12 +31,15 @@ public class MainController implements Initializable {
     VBox mainVBox;
 
     @FXML
-    ListView<String> localFilesList, serverFilesList;
+    TableView<File> localFilesTable, serverFilesTable;
 
     @FXML
-    Button uplBtn, dwnlBtn, updBtn, delBtn;
+    Label filesDragAndDrop, loadLabel;
 
     private String userName;
+    private List<File> serverFiles;
+    ObservableList<File> serverFilesList = FXCollections.observableArrayList();
+    ObservableList<File> localFilesList = FXCollections.observableArrayList();
 
 
     @Override
@@ -62,7 +67,9 @@ public class MainController implements Initializable {
                     }
                     if (income instanceof FilesListObject) {
                         FilesListObject flo = (FilesListObject) income;
-                        updateGUI(() -> {serverFilesList.getItems().addAll(flo.getFileNamesList());});
+                        serverFiles = flo.getServerFiles();
+                        updateGUI(() -> {serverFilesList.addAll(serverFiles);});
+                        //serverFilesTable.setItems(serverFilesList);
                     }
                 }
             } catch (ClassNotFoundException | IOException e) {
@@ -76,21 +83,28 @@ public class MainController implements Initializable {
         t.start();
         getUserObject();
 
-
-        serverFilesList.setItems(FXCollections.observableArrayList());
+        initializeDragAndDropLabel();
         refreshServerFilesList();
-        localFilesList.setItems(FXCollections.observableArrayList());
-        refreshLocalFilesList();
+
+        try {
+            initializeServerFilesTable();
+            initializeLocalFilesTable();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         Thread tskUpdLists = new Thread(taskUpdateLists);
         tskUpdLists.setDaemon(true);
         tskUpdLists.start();
 
-        serverFilesList.setOnMouseClicked(event -> {
-            localFilesList.getSelectionModel().clearSelection();
+        serverFilesTable.setOnMouseClicked(event -> {
+            localFilesTable.getSelectionModel().clearSelection();
         });
-        localFilesList.setOnMouseClicked(event -> {
-            Platform.runLater(() -> {serverFilesList.getSelectionModel().clearSelection();});
+        localFilesTable.setOnMouseClicked(event -> {
+            Platform.runLater(() -> {
+                serverFilesTable.getSelectionModel().clearSelection();
+            });
         });
 
 
@@ -98,23 +112,103 @@ public class MainController implements Initializable {
 
     ////////
 
-    public void pressOnDownloadBtn(ActionEvent actionEvent) {
-        String choosenFile = serverFilesList.getFocusModel().getFocusedItem();
-        Network.sendObject(new FileRequest(choosenFile));
+    public void initializeDragAndDropLabel() {
+        filesDragAndDrop.setOnDragOver(event -> {
+            filesDragAndDrop.setStyle("-fx-background-color: rgba(93, 204, 255, 0.51)");
+            if (event.getGestureSource() != filesDragAndDrop && event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            event.consume();
+        });
+
+        filesDragAndDrop.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                for (java.io.File o : db.getFiles()) {
+                    loadLabel.setText(o.getName());
+                }
+                success = true;
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+
+        filesDragAndDrop.setOnDragExited(event -> {
+            filesDragAndDrop.setStyle("-fx-background-color: rgba(93, 204, 255, 0.30);");
+            event.consume();
+        });
     }
 
-    /*public void pressOnUpdateBtn() {
+    public void initializeLocalFilesTable() throws IOException {
+        Files.list(Paths.get("client_storage")).forEach(o ->
+                localFilesList.add(new File(o.getFileName().toString(), o.toFile().length())));
+
+        TableColumn<File, String> tcName = new TableColumn<>("Name");
+        tcName.setCellValueFactory(new PropertyValueFactory<File, String>("fileName"));
+
+        TableColumn<File, String> tcSize = new TableColumn<>("Size, kb");
+        tcSize.setCellValueFactory(new PropertyValueFactory<File, String>("size"));
+
+        localFilesTable.getColumns().addAll(tcName, tcSize);
+        localFilesTable.setItems(localFilesList);
+    }
+
+    public void initializeServerFilesTable() throws IOException {
+        TableColumn<File, String> tcName = new TableColumn<>("Name");
+        tcName.setCellValueFactory(new PropertyValueFactory<File, String>("fileName"));
+
+        TableColumn<File, String> tcSize = new TableColumn<>("Size, kb");
+        tcSize.setCellValueFactory(new PropertyValueFactory<File, String>("size"));
+
+        serverFilesTable.getColumns().addAll(tcName, tcSize);
+        serverFilesTable.setItems(serverFilesList);
+    }
+
+    public void pressOnDownloadBtn(ActionEvent actionEvent) {
+        String choosenFile = null;
+        if (serverFilesTable.getSelectionModel().getSelectedItem() != null){
+        choosenFile = serverFilesTable.getFocusModel().getFocusedItem().getFileName();}
+        if (choosenFile != null) {
+            Network.sendObject(new FileRequest(choosenFile));
+        }
+    }
+
+    public void pressOnUploadBtn(ActionEvent actionEvent) throws IOException {
+        String fileName = null;
+        if (localFilesTable.getSelectionModel().getSelectedItem() != null){
+        fileName = localFilesTable.getFocusModel().getFocusedItem().getFileName();
+        if (Paths.get("client_storage/" + fileName).toFile().length() > Network.getMaxObjSize()){
+            Network.sendBigObject(Paths.get("client_storage/" + fileName));
+            return;
+        }
+        }
+        if (fileName != null) {
+            Network.sendObject(new FileObject(Paths.get("client_storage/" + fileName)));
             refreshServerFilesList();
-            refreshLocalFilesList();
-    }*/
+        }
+    }
+
+    public void pressOnDeleteBtn(ActionEvent actionEvent) throws IOException {
+        String filename = null;
+        if (localFilesTable.getFocusModel().getFocusedItem() != null){
+            filename = localFilesTable.getSelectionModel().getSelectedItem().getFileName();
+            Files.delete(Paths.get("client_storage/" + filename));
+        }
+        if (serverFilesTable.getSelectionModel().getSelectedItem() != null){
+            filename = serverFilesTable.getSelectionModel().getSelectedItem().getFileName();
+            Network.sendObject(new CMD("/delete", filename, null));
+            refreshServerFilesList();
+        }
+    }
 
     public void refreshLocalFilesList() {
         updateGUI(() -> {
-            localFilesList.getItems().clear();
+            localFilesTable.getItems().clear();
             try {
-                Files.list(Paths.get("client_storage")).map(p ->
-                        p.getFileName().toString()).forEach(o ->
-                        localFilesList.getItems().add(o));
+                Files.list(Paths.get("client_storage")).forEach(o ->
+                        localFilesList.add(new File(o.getFileName().toString(), o.toFile().length())));
+                localFilesTable.setItems(localFilesList);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -122,7 +216,7 @@ public class MainController implements Initializable {
     }
 
     public void refreshServerFilesList() {
-        serverFilesList.getItems().clear();
+        updateGUI(() -> {serverFilesTable.getItems().clear();});
         Network.sendObject(new FilesListRequest());
     }
 
@@ -141,6 +235,7 @@ public class MainController implements Initializable {
         }
     }
 
+
     public void updateTitle(String name) {
         Platform.runLater(() -> ((Stage) mainVBox.getScene().getWindow()).setTitle("Welcome to DropBox " + name));
     }
@@ -151,33 +246,13 @@ public class MainController implements Initializable {
 
     public static void updateGUI(Runnable r) {
         if (Platform.isFxApplicationThread()) {
-                r.run();
+            r.run();
         } else {
             Platform.runLater(r);
         }
     }
 
-    public void pressOnUploadBtn(ActionEvent actionEvent) throws IOException {
-        String fileName = localFilesList.getFocusModel().getFocusedItem();
-        Network.sendObject(new FileObject(Paths.get("client_storage/" + fileName)));
-        refreshServerFilesList();
-
-    }
-
-
-    public void pressOnDeleteBtn(ActionEvent actionEvent) throws IOException {
-        String locName = localFilesList.getSelectionModel().getSelectedItem();
-        String servName = serverFilesList.getSelectionModel().getSelectedItem();
-        if (locName != null){
-            Files.delete(Paths.get("client_storage/" + locName));
-        }
-        if (servName != null){
-            Network.sendObject(new CMD("/delete", servName, null));
-            refreshServerFilesList();
-        }
-    }
-
-
+    //Watcher on localList
     Task taskUpdateLists = new Task() {
         @Override
         protected Object call() throws Exception {
@@ -198,7 +273,7 @@ public class MainController implements Initializable {
                 }
                 for (WatchEvent event : key.pollEvents()) {
                     try {
-                        refreshLocalList();
+                        refreshLocalFilesList();
                     } catch (IllegalStateException e) {
                         e.printStackTrace();
                     }
@@ -207,17 +282,5 @@ public class MainController implements Initializable {
             }
         }
     };
-
-    public void refreshLocalList() {
-        Platform.runLater(() -> {
-            try {
-                localFilesList.getItems().clear();
-                Files.list(Paths.get("client_storage")).map(f ->
-                        f.getFileName().toString()).forEach(f -> localFilesList.getItems().add(f));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
 
 }

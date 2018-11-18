@@ -5,13 +5,13 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class FilesListObject extends AbstractObject{
-    private List<String> fileNamesList;
+    private List<File> serverFiles;
 
-    public List<String> getFileNamesList() {
-        return fileNamesList;
+    public List<File> getServerFiles() {
+        return serverFiles;
     }
 
-    public FilesListObject(List<String> fileNamesList) {
-        this.fileNamesList = fileNamesList;
+    public FilesListObject(List<File> serverFiles) {
+        this.serverFiles = serverFiles;
     }
 }

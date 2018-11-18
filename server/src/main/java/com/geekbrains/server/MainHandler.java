@@ -7,6 +7,7 @@ import io.netty.util.ReferenceCountUtil;
 import javafx.application.Platform;
 
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,12 +42,11 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (income instanceof FilesListRequest){
-                List<String> filesList = Files.list(Paths.get("server_storage/" + userName + "/"))
-                        .collect(Collectors.toList())
-                        .stream()
-                        .map(p -> p.getFileName().toString())
-                        .collect(Collectors.toList());
-                FilesListObject flo = new FilesListObject(filesList);
+                List<File> serverFiles = new ArrayList<>();
+                Files.list(Paths.get("server_storage/" + userName + "/"))
+                        .forEach(p -> serverFiles.add(new File(p.getFileName().toString(), p.toFile().length())));
+
+                FilesListObject flo = new FilesListObject(serverFiles);
                 ctx.writeAndFlush(flo);
             }
 
