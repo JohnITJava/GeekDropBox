@@ -18,10 +18,9 @@
 
     </ListView>
     <HBox alignment="BOTTOM_CENTER" spacing="5">
-        <Button maxWidth="Infinity" styleClass="UpBtn" HBox.hgrow="ALWAYS" onAction="#pressOnUploadBtn">UpLoad</Button>
-        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS" onAction="#pressOnDownloadBtn">DownLoad</Button>
-        <Button maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS" onAction="#pressOnUpdateBtn">Update</Button>
-        <Button maxWidth="Infinity" styleClass="DelBtn" HBox.hgrow="ALWAYS" onAction="#pressOnDeleteBtn">Delete</Button>
+        <Button fx:id="uplBtn" maxWidth="Infinity" styleClass="UpBtn" HBox.hgrow="ALWAYS" onAction="#pressOnUploadBtn">UpLoad</Button>
+        <Button fx:id="dwnlBtn" maxWidth="Infinity" styleClass="myBtn" HBox.hgrow="ALWAYS" onAction="#pressOnDownloadBtn">DownLoad</Button>
+        <Button fx:id="delBtn" maxWidth="Infinity" styleClass="DelBtn" HBox.hgrow="ALWAYS" onAction="#pressOnDeleteBtn">Delete</Button>
         <Button maxWidth="Infinity" styleClass="logOffBtn" HBox.hgrow="ALWAYS" onAction="#logOffSystem">LogOFF</Button>
         <padding>
             <Insets bottom="5.0" left="5" right="5.0" top="5.0"/>

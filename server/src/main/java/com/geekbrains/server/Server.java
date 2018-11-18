@@ -15,6 +15,9 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import java.sql.SQLException;
 
 public class Server {
+    private static final int PORT = 8189;
+    private static final int MAX_OBJ_SIZE = 1024 * 1024 * 5; //5 Mb
+
     public Server() {
     }
 
@@ -30,17 +33,18 @@ public class Server {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(
-                                    new ObjectDecoder(5 * 1024 * 1024, ClassResolvers.cacheDisabled(null)),
+                                    new ObjectDecoder(MAX_OBJ_SIZE, ClassResolvers.cacheDisabled(null)),
                                     new ObjectEncoder(),
                                     new AuthRegHandler(),
-                                    new MainHandler()
+                                    new MainHandler(),
+                                    new CMDHandler()
                             );
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .option(ChannelOption.TCP_NODELAY, true)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
-            ChannelFuture future = b.bind(8189).sync();
+            ChannelFuture future = b.bind(PORT).sync();
             future.channel().closeFuture().sync();
         } finally {
             mainGroup.shutdownGracefully();

@@ -33,7 +33,6 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (income instanceof FileRequest) {
-                System.out.println("Request on server");
                 FileRequest fr = (FileRequest) income;
                 if (Files.exists(Paths.get("server_storage/" + userName + "/" + fr.getFilename()))) {
                     FileObject fm = new FileObject(Paths.get("server_storage/" + userName + "/" + fr.getFilename()));
