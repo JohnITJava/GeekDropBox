@@ -13,7 +13,8 @@ public class Network {
     private static ObjectEncoderOutputStream out;
     private static ObjectDecoderInputStream in;
     private static final int PORT = 8189;
-    private static final int MAX_OBJ_SIZE = 1024 * 1024 * 5; //5 Mb
+    private static final int MAX_OBJ_SIZE = 1024 * 1024 * 100; //100 Mb
+
 
     public static int getMaxObjSize() {
         return MAX_OBJ_SIZE;
@@ -23,7 +24,7 @@ public class Network {
         try {
             socket = new Socket("localhost", PORT);
             out = new ObjectEncoderOutputStream(socket.getOutputStream());
-            in = new ObjectDecoderInputStream(socket.getInputStream(), MAX_OBJ_SIZE);
+            in = new ObjectDecoderInputStream(socket.getInputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -50,16 +51,7 @@ public class Network {
     public static boolean sendObject(AbstractObject object) {
         try {
             out.writeObject(object);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public static boolean sendBigObject(Path path) {
-        try {
-            out.writeObject(object);
+            System.out.println("Полетел малыш");
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -68,6 +60,7 @@ public class Network {
     }
 
     public static AbstractObject readObject() throws ClassNotFoundException, IOException {
+        System.out.println("Get it for Mommy");
         Object obj = in.readObject();
         return (AbstractObject) obj;
     }

@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
+    private static final int MAX_OBJ_SIZE = 1024 * 1024 * 5;
+
     @FXML
     VBox mainVBox;
 
@@ -34,7 +36,7 @@ public class MainController implements Initializable {
     TableView<File> localFilesTable, serverFilesTable;
 
     @FXML
-    Label filesDragAndDrop, loadLabel;
+    Label filesDragAndDrop, progressLabel;
 
     private String userName;
     private List<File> serverFiles;
@@ -55,23 +57,30 @@ public class MainController implements Initializable {
 
                     AbstractObject income = Network.readObject();
 
-                    if (income instanceof UserObject) {
-                        UserObject uo = (UserObject) income;
-                        this.userName = uo.getName();
-                        updateTitle(userName);
+                        if (income instanceof UserObject) {
+                            UserObject uo = (UserObject) income;
+                            this.userName = uo.getName();
+                            updateTitle(userName);
+                        }
+                        if (income instanceof FileObject) {
+                            FileObject fm = (FileObject) income;
+                            Files.write(Paths.get("client_storage/"
+                                    + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
+                        }
+                        if (income instanceof FilesListObject) {
+                            FilesListObject flo = (FilesListObject) income;
+                            serverFiles = flo.getServerFiles();
+                            updateGUI(() -> {
+                                serverFilesList.addAll(serverFiles);
+                            });
+                        }
+                    if (income instanceof BigDataInfo) {
+                        BigDataInfo info = (BigDataInfo) income;
+                        if (ExtController.bigDataHandler(info)){
+                            refreshServerFilesList();
+                            }
+                        }
                     }
-                    if (income instanceof FileObject) {
-                        FileObject fm = (FileObject) income;
-                        Files.write(Paths.get("client_storage/"
-                                + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
-                    }
-                    if (income instanceof FilesListObject) {
-                        FilesListObject flo = (FilesListObject) income;
-                        serverFiles = flo.getServerFiles();
-                        updateGUI(() -> {serverFilesList.addAll(serverFiles);});
-                        //serverFilesTable.setItems(serverFilesList);
-                    }
-                }
             } catch (ClassNotFoundException | IOException e) {
                 e.printStackTrace();
             } finally {
@@ -126,7 +135,7 @@ public class MainController implements Initializable {
             boolean success = false;
             if (db.hasFiles()) {
                 for (java.io.File o : db.getFiles()) {
-                    loadLabel.setText(o.getName());
+                    progressLabel.setText(o.getName());
                 }
                 success = true;
             }
@@ -165,10 +174,13 @@ public class MainController implements Initializable {
         serverFilesTable.setItems(serverFilesList);
     }
 
+    /////
+
     public void pressOnDownloadBtn(ActionEvent actionEvent) {
         String choosenFile = null;
-        if (serverFilesTable.getSelectionModel().getSelectedItem() != null){
-        choosenFile = serverFilesTable.getFocusModel().getFocusedItem().getFileName();}
+        if (serverFilesTable.getSelectionModel().getSelectedItem() != null) {
+            choosenFile = serverFilesTable.getFocusModel().getFocusedItem().getFileName();
+        }
         if (choosenFile != null) {
             Network.sendObject(new FileRequest(choosenFile));
         }
@@ -176,12 +188,12 @@ public class MainController implements Initializable {
 
     public void pressOnUploadBtn(ActionEvent actionEvent) throws IOException {
         String fileName = null;
-        if (localFilesTable.getSelectionModel().getSelectedItem() != null){
-        fileName = localFilesTable.getFocusModel().getFocusedItem().getFileName();
-        if (Paths.get("client_storage/" + fileName).toFile().length() > Network.getMaxObjSize()){
-            Network.sendBigObject(Paths.get("client_storage/" + fileName));
-            return;
-        }
+        if (localFilesTable.getSelectionModel().getSelectedItem() != null) {
+            fileName = localFilesTable.getFocusModel().getFocusedItem().getFileName();
+            if (Paths.get("client_storage/" + fileName).toFile().length() > MAX_OBJ_SIZE) {
+                ExtController.sendBigData(Paths.get("client_storage/" + fileName));
+                return;
+            }
         }
         if (fileName != null) {
             Network.sendObject(new FileObject(Paths.get("client_storage/" + fileName)));
@@ -191,11 +203,11 @@ public class MainController implements Initializable {
 
     public void pressOnDeleteBtn(ActionEvent actionEvent) throws IOException {
         String filename = null;
-        if (localFilesTable.getFocusModel().getFocusedItem() != null){
+        if (localFilesTable.getFocusModel().getFocusedItem() != null) {
             filename = localFilesTable.getSelectionModel().getSelectedItem().getFileName();
             Files.delete(Paths.get("client_storage/" + filename));
         }
-        if (serverFilesTable.getSelectionModel().getSelectedItem() != null){
+        if (serverFilesTable.getSelectionModel().getSelectedItem() != null) {
             filename = serverFilesTable.getSelectionModel().getSelectedItem().getFileName();
             Network.sendObject(new CMD("/delete", filename, null));
             refreshServerFilesList();
@@ -216,7 +228,9 @@ public class MainController implements Initializable {
     }
 
     public void refreshServerFilesList() {
-        updateGUI(() -> {serverFilesTable.getItems().clear();});
+        updateGUI(() -> {
+            serverFilesTable.getItems().clear();
+        });
         Network.sendObject(new FilesListRequest());
     }
 

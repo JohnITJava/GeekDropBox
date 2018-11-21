@@ -21,7 +21,7 @@
         <padding>
             <Insets left="2" right="2.0" top="2"/>
         </padding>
-    <Label fx:id="loadLabel" alignment="CENTER" styleClass="loadLab" HBox.hgrow="ALWAYS" prefWidth="400"/>
+    <Label fx:id="progressLabel" alignment="CENTER" styleClass="loadLab" HBox.hgrow="ALWAYS" prefWidth="400"/>
     </HBox>
     <HBox alignment="BOTTOM_CENTER" spacing="5">
         <Button fx:id="uplBtn" maxWidth="Infinity" styleClass="UpBtn" HBox.hgrow="ALWAYS" onAction="#pressOnUploadBtn">UpLoad</Button>
