@@ -51,7 +51,6 @@ public class Network {
     public static boolean sendObject(AbstractObject object) {
         try {
             out.writeObject(object);
-            System.out.println("Полетел малыш");
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -60,7 +59,6 @@ public class Network {
     }
 
     public static AbstractObject readObject() throws ClassNotFoundException, IOException {
-        System.out.println("Get it for Mommy");
         Object obj = in.readObject();
         return (AbstractObject) obj;
     }

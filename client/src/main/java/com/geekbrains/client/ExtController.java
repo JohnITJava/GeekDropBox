@@ -19,7 +19,6 @@ public class ExtController {
     public static synchronized void sendBigData(Path path) {
 
         Thread bigDataSender = new Thread(() -> {
-            System.out.println("Start thread sender");
             String filePath = path.toString();
             String fileName = Paths.get(filePath).getFileName().toString();
             Long fileSize = path.toFile().length();
@@ -35,61 +34,48 @@ public class ExtController {
 
                 synchronized (monitor) {
                     for (int i = 0; i < partCount - 1; i++) {
-                        System.out.println("Try to read " + i + " part");
 
                         for (int j = 0; j < arrPartData.length; j++) {
                             arrPartData[j] = (byte) in.read();
                         }
-
                         Network.sendObject(new FileBigObject(fileName, arrPartData, i + 1, partCount, hash, fileSize));
 
-                        System.out.println("Send " + i + " part");
-
                         //Thread.currentThread().suspend();
-
                         monitor.wait();
                     }
 
                     synchronized (monitor) {
-                        System.out.println("Чтение последнего куска");
                         for (int j = 0; j < arrLastPartData.length; j++) {
                             arrLastPartData[j] = (byte) in.read();
                         }
                         Network.sendObject(new FileBigObject(fileName, arrLastPartData, partCount, partCount, hash, fileSize));
-
                         monitor.wait();
                     }
                 }
-                System.out.println("Thread closing");
                 in.close();
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
         });
 
-        //bigDataListener.start();
         bigDataSender.setDaemon(true);
         bigDataSender.start();
     }
 
     public static synchronized boolean bigDataHandler(BigDataInfo info) {
-        System.out.println("Обрабатывыю команду");
         if (info.getStatus().equals("next")) {
             //bigDataSender.notify();
             synchronized (monitor){
-                System.out.println("Бужу поток");
-            monitor.notifyAll();}
-            return true;
+            monitor.notifyAll();
+            }
+            return false;
         }
         if (info.getStatus().equals("getIt")) {
-            System.out.println("Жду решения");
             synchronized (monitor){
-                System.out.println("Бужу поток для завершения");
                 monitor.notifyAll();}
                 return true;
         }
         if (info.getStatus().equals("already exists")) {
-            System.out.println("Уже существует");
             return false;
         }
         return false;

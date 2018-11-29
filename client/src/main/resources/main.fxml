@@ -14,14 +14,14 @@
     <TableView fx:id="serverFilesTable" VBox.vgrow="ALWAYS"/>
     <HBox alignment="CENTER" minHeight="30" styleClass="headArea"><Label alignment="CENTER" styleClass="labelHint">Local Storage</Label></HBox>
     <HBox>
-    <TableView fx:id="localFilesTable" VBox.vgrow="ALWAYS"/>
-    <Label fx:id="filesDragAndDrop" alignment="CENTER" prefHeight="150" prefWidth="150" text="Drop files here!" wrapText="true" styleClass="drugNdrop"/>
+    <TableView fx:id="localFilesTable" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS" />
+    <Label fx:id="filesDragAndDrop" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" alignment="CENTER" prefWidth="150" prefHeight="150" text="Drop files here!" wrapText="true" styleClass="drugNdrop"/>
     </HBox>
     <HBox>
         <padding>
             <Insets left="2" right="2.0" top="2"/>
         </padding>
-    <Label fx:id="progressLabel" alignment="CENTER" styleClass="loadLab" HBox.hgrow="ALWAYS" prefWidth="400"/>
+    <Label fx:id="progressLabel" alignment="CENTER" styleClass="loadLab" HBox.hgrow="ALWAYS" minWidth="500"/>
     </HBox>
     <HBox alignment="BOTTOM_CENTER" spacing="5">
         <Button fx:id="uplBtn" maxWidth="Infinity" styleClass="UpBtn" HBox.hgrow="ALWAYS" onAction="#pressOnUploadBtn">UpLoad</Button>

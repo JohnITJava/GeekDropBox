@@ -28,7 +28,6 @@ public class CMDHandler extends ChannelInboundHandlerAdapter {
                 CMD cmd = (CMD) income;
                 if (cmd.getCommand().equals("/delete")){
                     Files.delete(Paths.get("server_storage/" + userName + "/" + cmd.getFilename()));
-                    System.out.println("Удалил файл");
                 }
             }
 

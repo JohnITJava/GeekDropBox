@@ -40,8 +40,8 @@ public class MainController implements Initializable {
 
     private String userName;
     private List<File> serverFiles;
-    ObservableList<File> serverFilesList = FXCollections.observableArrayList();
-    ObservableList<File> localFilesList = FXCollections.observableArrayList();
+    private ObservableList<File> serverFilesList = FXCollections.observableArrayList();
+    private ObservableList<File> localFilesList = FXCollections.observableArrayList();
 
 
     @Override

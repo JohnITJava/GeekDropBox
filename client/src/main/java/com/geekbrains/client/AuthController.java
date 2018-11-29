@@ -98,7 +98,7 @@ public class AuthController implements Initializable{
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/main.fxml"));
             root = (Pane) loader.load();
-            Scene scene = new Scene(root, 400, 400);
+            Scene scene = new Scene(root, 500, 400);
             ((Stage) mainVBox.getScene().getWindow()).setScene(scene);
 
         } catch (IOException e){

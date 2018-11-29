@@ -27,7 +27,6 @@ public class BigDataHandler extends ChannelInboundHandlerAdapter {
 
             if (income instanceof FileBigObject){
                 FileBigObject fbo = (FileBigObject) income;
-                System.out.println("Get on server big Object");
 
                 /*if (new File("server_storage/" + userName + "/" + fbo.getFilename()).exists()){
                     ctx.writeAndFlush(new BigDataInfo(0, 0, "already exists"));
