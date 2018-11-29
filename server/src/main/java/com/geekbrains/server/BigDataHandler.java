@@ -25,24 +25,23 @@ public class BigDataHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
+            if (income instanceof BigDataInfo){
+                BigDataInfo bdi = (BigDataInfo) income;
+                if (bdi.getStatus().equals("ReadyToSend")){
+                    byte[] firstByte = new byte[0];
+                    Files.write(Paths.get("server_storage/" + userName + "/" + bdi.getFileName()), firstByte, StandardOpenOption.CREATE);
+                    System.out.println("Create file");
+                    ctx.writeAndFlush(new BigDataInfo(0, 0, "next"));
+                }
+            }
+
             if (income instanceof FileBigObject){
                 FileBigObject fbo = (FileBigObject) income;
 
-                /*if (new File("server_storage/" + userName + "/" + fbo.getFilename()).exists()){
-                    ctx.writeAndFlush(new BigDataInfo(0, 0, "already exists"));
-                    return;
-                }*/
-
                 byte[] dataPart = fbo.getData();
 
-                if (fbo.getCurPart() == 1){
-                    System.out.println("Server get " + fbo.getCurPart());
-                    Files.write(Paths.get("server_storage/" + userName + "/" + fbo.getFilename()), fbo.getData(), StandardOpenOption.CREATE);
-                    System.out.println("Create file");
-                } else {
-                    Files.write(Paths.get("server_storage/" + userName + "/" + fbo.getFilename()), fbo.getData(), StandardOpenOption.APPEND);
-                    System.out.println("Append file");
-                }
+                Files.write(Paths.get("server_storage/" + userName + "/" + fbo.getFilename()), fbo.getData(), StandardOpenOption.APPEND);
+                System.out.println("Append file");
 
                 if (fbo.getCurPart() == fbo.getPartCount()){
                     ctx.writeAndFlush(new BigDataInfo(fbo.getCurPart(), fbo.getPartCount(), "getIt"));

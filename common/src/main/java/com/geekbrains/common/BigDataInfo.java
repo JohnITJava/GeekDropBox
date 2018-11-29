@@ -4,6 +4,7 @@ public class BigDataInfo extends AbstractObject{
     private int numPart;
     private int partsCount;
     private String status;
+    private String fileName;
 
     public int getNumPart() {
         return numPart;
@@ -17,9 +18,20 @@ public class BigDataInfo extends AbstractObject{
         return partsCount;
     }
 
+    public String getFileName() {
+        return fileName;
+    }
+
     public BigDataInfo(int numPart, int partsCount, String status) {
         this.numPart = numPart;
         this.partsCount = partsCount;
         this.status = status;
+    }
+
+    public BigDataInfo(int numPart, int partsCount, String status, String fileName) {
+        this.numPart = numPart;
+        this.partsCount = partsCount;
+        this.status = status;
+        this.fileName = fileName;
     }
 }

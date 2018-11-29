@@ -14,46 +14,57 @@ import java.util.concurrent.Executors;
 
 public class ExtController {
     private static final int MAX_OBJ_SIZE = 1024 * 1024 * 4; //4 Mb
-    private static final Object monitor = new Object();
+    private static boolean isNext = false;
+    private static boolean isSendIt = false;
 
-    public static synchronized void sendBigData(Path path) {
+    public static void sendBigData(Path path) {
 
         Thread bigDataSender = new Thread(() -> {
             String filePath = path.toString();
             String fileName = Paths.get(filePath).getFileName().toString();
             Long fileSize = path.toFile().length();
 
-            int partCount = (int)Math.ceil(fileSize / Double.parseDouble(String.valueOf(MAX_OBJ_SIZE)));
+            int partCount = (int) Math.ceil(fileSize / Double.parseDouble(String.valueOf(MAX_OBJ_SIZE)));
 
             try {
-                    File file = new File(filePath);
-                    String hash = toHash(fileSize, fileName);
-                    byte[] arrPartData = new byte[MAX_OBJ_SIZE];
-                    byte[] arrLastPartData = new byte[(int)(fileSize - MAX_OBJ_SIZE * (partCount - 1))];
-                    InputStream in = new BufferedInputStream(new FileInputStream(file)); //Открываем поток
+                File file = new File(filePath);
+                String hash = toHash(fileSize, fileName);
+                byte[] arrPartData = new byte[MAX_OBJ_SIZE];
+                byte[] arrLastPartData = new byte[(int) (fileSize - MAX_OBJ_SIZE * (partCount - 1))];
+                InputStream in = new BufferedInputStream(new FileInputStream(file)); //Открываем поток
+                int ipart = 0;
 
-                synchronized (monitor) {
-                    for (int i = 0; i < partCount - 1; i++) {
+                Network.sendObject(new BigDataInfo(0, partCount, "ReadyToSend", fileName));
 
-                        for (int j = 0; j < arrPartData.length; j++) {
-                            arrPartData[j] = (byte) in.read();
-                        }
-                        Network.sendObject(new FileBigObject(fileName, arrPartData, i + 1, partCount, hash, fileSize));
-
-                        //Thread.currentThread().suspend();
-                        monitor.wait();
+                while (true) {
+                    if (isSendIt) {
+                        break;
                     }
+                    if (isNext) {
+                        isNext = false;
+                        ipart += 1;
 
-                    synchronized (monitor) {
-                        for (int j = 0; j < arrLastPartData.length; j++) {
-                            arrLastPartData[j] = (byte) in.read();
+                        if (ipart < partCount) {
+                            for (int j = 0; j < arrPartData.length; j++) {
+                                arrPartData[j] = (byte) in.read();
+                            }
+                            Network.sendObject(new FileBigObject(fileName, arrPartData, ipart, partCount, hash, fileSize));
                         }
-                        Network.sendObject(new FileBigObject(fileName, arrLastPartData, partCount, partCount, hash, fileSize));
-                        monitor.wait();
+
+                        if (ipart == partCount) {
+                            for (int j = 0; j < arrLastPartData.length; j++) {
+                                arrLastPartData[j] = (byte) in.read();
+                            }
+                            Network.sendObject(new FileBigObject(fileName, arrLastPartData, partCount, partCount, hash, fileSize));
+                        }
                     }
                 }
+
+                isNext = false;
+                isSendIt = false;
+
                 in.close();
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         });
@@ -62,18 +73,14 @@ public class ExtController {
         bigDataSender.start();
     }
 
-    public static synchronized boolean bigDataHandler(BigDataInfo info) {
+    public static boolean bigDataHandler(BigDataInfo info) {
         if (info.getStatus().equals("next")) {
-            //bigDataSender.notify();
-            synchronized (monitor){
-            monitor.notifyAll();
-            }
+            isNext = true;
             return false;
         }
         if (info.getStatus().equals("getIt")) {
-            synchronized (monitor){
-                monitor.notifyAll();}
-                return true;
+            isSendIt = true;
+            return true;
         }
         if (info.getStatus().equals("already exists")) {
             return false;
@@ -82,6 +89,7 @@ public class ExtController {
     }
 
     public static String toHash(long data, String name) {
-        return DigestUtils.md5Hex(String.valueOf(data) + name);}
+        return DigestUtils.md5Hex(String.valueOf(data) + name);
+    }
 
 }
