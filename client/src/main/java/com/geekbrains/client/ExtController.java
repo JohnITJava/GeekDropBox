@@ -20,6 +20,7 @@ public class ExtController {
     public static void sendBigData(Path path) {
 
         Thread bigDataSender = new Thread(() -> {
+            System.out.println("Вошли в тред");
             String filePath = path.toString();
             String fileName = Paths.get(filePath).getFileName().toString();
             Long fileSize = path.toFile().length();
@@ -35,8 +36,12 @@ public class ExtController {
                 int ipart = 0;
 
                 Network.sendObject(new BigDataInfo(0, partCount, "ReadyToSend", fileName));
+                System.out.println("Предупредили сервер о передаче");
 
                 while (true) {
+
+                    Thread.sleep(1);
+
                     if (isSendIt) {
                         break;
                     }
@@ -60,11 +65,12 @@ public class ExtController {
                     }
                 }
 
+                System.out.println("Завершаем поток");
                 isNext = false;
                 isSendIt = false;
 
                 in.close();
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
         });
@@ -75,10 +81,12 @@ public class ExtController {
 
     public static boolean bigDataHandler(BigDataInfo info) {
         if (info.getStatus().equals("next")) {
+            System.out.println("получили запрос на некст");
             isNext = true;
             return false;
         }
         if (info.getStatus().equals("getIt")) {
+            System.out.println("получили подтверждение получения всего файла");
             isSendIt = true;
             return true;
         }
