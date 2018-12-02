@@ -1,11 +1,14 @@
 package com.geekbrains.server;
 
 import com.geekbrains.common.*;
+import com.geekbrains.common.File;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 import javafx.application.Platform;
+import org.apache.commons.codec.digest.DigestUtils;
 
+import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     public void setUserName(String userName) {
         this.userName = userName;
     }
+    private static final int MAX_OBJ_SIZE = 1024 * 1024 * 5;
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object income) throws Exception {
@@ -36,8 +40,12 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             if (income instanceof FileRequest) {
                 FileRequest fr = (FileRequest) income;
                 if (Files.exists(Paths.get("server_storage/" + userName + "/" + fr.getFilename()))) {
+                    if (Paths.get("server_storage/" + userName + "/" + fr.getFilename()).toFile().length() > MAX_OBJ_SIZE){
+                        ctx.pipeline().get(BigDataHandler.class).sendBigDataToClient(fr, ctx);
+                    } else {
                     FileObject fm = new FileObject(Paths.get("server_storage/" + userName + "/" + fr.getFilename()));
                     ctx.writeAndFlush(fm);
+                    }
                 }
             }
 
@@ -66,5 +74,6 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.close();
     }
+
 
 }

@@ -22,6 +22,15 @@ public class BigDataInfo extends AbstractObject{
         return fileName;
     }
 
+    public BigDataInfo(String status) {
+        this.status = status;
+    }
+
+    public BigDataInfo(String status, String fileName) {
+        this.status = status;
+        this.fileName = fileName;
+    }
+
     public BigDataInfo(int numPart, int partsCount, String status) {
         this.numPart = numPart;
         this.partsCount = partsCount;

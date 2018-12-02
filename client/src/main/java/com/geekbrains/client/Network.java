@@ -24,7 +24,7 @@ public class Network {
         try {
             socket = new Socket("localhost", PORT);
             out = new ObjectEncoderOutputStream(socket.getOutputStream());
-            in = new ObjectDecoderInputStream(socket.getInputStream());
+            in = new ObjectDecoderInputStream(socket.getInputStream(), MAX_OBJ_SIZE);
         } catch (IOException e) {
             e.printStackTrace();
         }

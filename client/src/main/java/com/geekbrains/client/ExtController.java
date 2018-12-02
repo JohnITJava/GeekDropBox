@@ -5,22 +5,16 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.*;
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class ExtController {
     private static final int MAX_OBJ_SIZE = 1024 * 1024 * 4; //4 Mb
-    private static boolean isNext = false;
-    private static boolean isSendIt = false;
+
 
     public static void sendBigData(Path path) {
 
         Thread bigDataSender = new Thread(() -> {
-            System.out.println("Вошли в тред");
             String filePath = path.toString();
             String fileName = Paths.get(filePath).getFileName().toString();
             Long fileSize = path.toFile().length();
@@ -36,41 +30,21 @@ public class ExtController {
                 int ipart = 0;
 
                 Network.sendObject(new BigDataInfo(0, partCount, "ReadyToSend", fileName));
-                System.out.println("Предупредили сервер о передаче");
 
-                while (true) {
-
-                    Thread.sleep(1);
-
-                    if (isSendIt) {
-                        break;
-                    }
-                    if (isNext) {
-                        isNext = false;
-                        ipart += 1;
-
-                        if (ipart < partCount) {
-                            for (int j = 0; j < arrPartData.length; j++) {
-                                arrPartData[j] = (byte) in.read();
-                            }
-                            Network.sendObject(new FileBigObject(fileName, arrPartData, ipart, partCount, hash, fileSize));
-                        }
-
-                        if (ipart == partCount) {
-                            for (int j = 0; j < arrLastPartData.length; j++) {
-                                arrLastPartData[j] = (byte) in.read();
-                            }
-                            Network.sendObject(new FileBigObject(fileName, arrLastPartData, partCount, partCount, hash, fileSize));
-                        }
-                    }
+                ipart += 1;
+                for (int i = 0; i < partCount-1; i++) {
+                    in.read(arrPartData);
+                    Network.sendObject(new FileBigObject(fileName, arrPartData, ipart, partCount, hash, fileSize));
+                    ipart += 1;
                 }
 
-                System.out.println("Завершаем поток");
-                isNext = false;
-                isSendIt = false;
-
+                in.read(arrLastPartData);
+                Network.sendObject(new FileBigObject(fileName, arrLastPartData, ipart, partCount, hash, fileSize));
                 in.close();
-            } catch (IOException | InterruptedException e) {
+
+                Network.sendObject(new BigDataInfo("Over", fileName));
+
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         });
@@ -79,21 +53,21 @@ public class ExtController {
         bigDataSender.start();
     }
 
-    public static boolean bigDataHandler(BigDataInfo info) {
+    public synchronized static boolean bigDataHandler(BigDataInfo info) {
         if (info.getStatus().equals("next")) {
-            System.out.println("получили запрос на некст");
-            isNext = true;
-            return false;
+            return true;
         }
         if (info.getStatus().equals("getIt")) {
-            System.out.println("получили подтверждение получения всего файла");
-            isSendIt = true;
             return true;
         }
         if (info.getStatus().equals("already exists")) {
             return false;
         }
         return false;
+    }
+
+    public static void receiveBigData(){
+
     }
 
     public static String toHash(long data, String name) {

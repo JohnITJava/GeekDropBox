@@ -5,15 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class FileBigObject extends AbstractObject {
-    private String filename;
+    private String fileName;
     private byte[] data;
     private int partCount;
     private int curPart;
     private String hash;
     private long sizeFile;
 
-    public String getFilename() {
-        return filename;
+    public String getFileName() {
+        return fileName;
     }
 
     public byte[] getData() {
@@ -37,7 +37,7 @@ public class FileBigObject extends AbstractObject {
     }
 
     public FileBigObject(String name, byte[] data, int curPart, int partCount, String hash, Long size){
-        this.filename = name;
+        this.fileName = name;
         this.data = data;
         this.curPart = curPart;
         this.partCount = partCount;

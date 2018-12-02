@@ -57,30 +57,43 @@ public class MainController implements Initializable {
 
                     AbstractObject income = Network.readObject();
 
-                        if (income instanceof UserObject) {
-                            UserObject uo = (UserObject) income;
-                            this.userName = uo.getName();
-                            updateTitle(userName);
-                        }
-                        if (income instanceof FileObject) {
-                            FileObject fm = (FileObject) income;
-                            Files.write(Paths.get("client_storage/"
-                                    + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
-                        }
-                        if (income instanceof FilesListObject) {
-                            FilesListObject flo = (FilesListObject) income;
-                            serverFiles = flo.getServerFiles();
-                            updateGUI(() -> {
-                                serverFilesList.addAll(serverFiles);
-                            });
-                        }
+                    if (income instanceof UserObject) {
+                        UserObject uo = (UserObject) income;
+                        this.userName = uo.getName();
+                        updateTitle(userName);
+                    }
+                    if (income instanceof FileObject) {
+                        FileObject fm = (FileObject) income;
+                        Files.write(Paths.get("client_storage/"
+                                + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
+                    }
+                    if (income instanceof FilesListObject) {
+                        FilesListObject flo = (FilesListObject) income;
+                        serverFiles = flo.getServerFiles();
+                        updateGUI(() -> {
+                            serverFilesList.addAll(serverFiles);
+                        });
+                    }
                     if (income instanceof BigDataInfo) {
                         BigDataInfo info = (BigDataInfo) income;
-                        if (ExtController.bigDataHandler(info)){
+                        if (info.getStatus().equals("ReadyToSend")) {
+                            byte[] zero = new byte[0];
+                            Files.write(Paths.get("client_storage/"
+                                    + info.getFileName()), zero, StandardOpenOption.CREATE);
+                            System.out.println("Create big file");
+                        }
+                        if (ExtController.bigDataHandler(info)) {
                             refreshServerFilesList();
-                            }
                         }
                     }
+                    if (income instanceof FileBigObject){
+                        System.out.println("Get part to append");
+                        FileBigObject botc = (FileBigObject) income;
+                        Files.write(Paths.get("client_storage/" + botc.getFileName()),
+                                botc.getData(), StandardOpenOption.APPEND);
+                    }
+
+                }
             } catch (ClassNotFoundException | IOException e) {
                 e.printStackTrace();
             } finally {
@@ -182,7 +195,9 @@ public class MainController implements Initializable {
             choosenFile = serverFilesTable.getFocusModel().getFocusedItem().getFileName();
         }
         if (choosenFile != null) {
-            Network.sendObject(new FileRequest(choosenFile));
+            if (!Paths.get("client_storage" + choosenFile).toFile().exists()) {
+                Network.sendObject(new FileRequest(choosenFile));
+            }
         }
     }
 
