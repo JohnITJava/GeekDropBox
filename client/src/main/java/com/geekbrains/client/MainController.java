@@ -42,6 +42,7 @@ public class MainController implements Initializable {
     private List<File> serverFiles;
     private ObservableList<File> serverFilesList = FXCollections.observableArrayList();
     private ObservableList<File> localFilesList = FXCollections.observableArrayList();
+    private FileBigObject botc = null;
 
 
     @Override
@@ -88,13 +89,13 @@ public class MainController implements Initializable {
                     }
                     if (income instanceof FileBigObject){
                         System.out.println("Get part to append");
-                        FileBigObject botc = (FileBigObject) income;
+                        botc = (FileBigObject) income;
                         Files.write(Paths.get("client_storage/" + botc.getFileName()),
                                 botc.getData(), StandardOpenOption.APPEND);
                     }
 
                 }
-            } catch (ClassNotFoundException | IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             } finally {
                 Network.stop();

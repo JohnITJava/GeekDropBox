@@ -43,7 +43,8 @@ public class BigDataHandler extends ChannelInboundHandlerAdapter {
             if (income instanceof FileBigObject) {
                 FileBigObject fbo = (FileBigObject) income;
                 Files.write(Paths.get("server_storage/" + userName + "/" + fbo.getFileName()), fbo.getData(), StandardOpenOption.APPEND);
-                System.out.println("Append file");
+                System.out.println("Append file : " + fbo.getFileName());
+
                 if (fbo.getCurPart() == fbo.getPartCount()){
                     ctx.writeAndFlush(new BigDataInfo("getIt"));
                     System.out.println("Get file fully");
@@ -91,7 +92,8 @@ public class BigDataHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        System.out.println("BDH" + cause);
         ctx.close();
     }
 

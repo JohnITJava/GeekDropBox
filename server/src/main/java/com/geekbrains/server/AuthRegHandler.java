@@ -56,7 +56,8 @@ public class AuthRegHandler extends ChannelInboundHandlerAdapter {
 }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
+        System.out.println("AuReg" + cause);
         ctx.close();
     }
 

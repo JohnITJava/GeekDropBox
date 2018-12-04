@@ -71,7 +71,8 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        System.out.println("MainH" + cause);
         ctx.close();
     }
 

@@ -41,32 +41,32 @@ public class AuthController implements Initializable{
         }));
 
         Thread t = new Thread(() -> {
-            try {
-                while (true) {
-                    AbstractObject income = Network.readObject();
-                    if (income instanceof AuthObject) {
-                        AuthObject ao = (AuthObject) income;
-                        if (ao.isAuthorized()) {
-                            textInGUI("SUCCESS. Loading the system, please, wait...");
-                            Platform.runLater(() -> switchSceneToBox());
-                            break;
-                        } else {
-                            textInGUI("Wrong combination of login and pass");
-                        }
-                    }
-                    if (income instanceof RegObject){
-                        RegObject ro = (RegObject) income;
-                        if (ro.isRegistered()) {
-                            textInGUI("Registration is SUCCESS");
-                            logF.clear();
-                            passF.clear();
-                        } else {
-                            textInGUI("Registration aborted, such login has already exists");
-                        }
+
+            while (true) {
+
+                AbstractObject income = Network.readObject();
+                System.out.println(income.getClass());
+
+                if (income instanceof AuthObject) {
+                    AuthObject ao = (AuthObject) income;
+                    if (ao.isAuthorized()) {
+                        textInGUI("SUCCESS. Loading the system, please, wait...");
+                        Platform.runLater(() -> switchSceneToBox());
+                        break;
+                    } else {
+                        textInGUI("Wrong combination of login and pass");
                     }
                 }
-            } catch (ClassNotFoundException | IOException e) {
-                e.printStackTrace();
+                if (income instanceof RegObject){
+                    RegObject ro = (RegObject) income;
+                    if (ro.isRegistered()) {
+                        textInGUI("Registration is SUCCESS");
+                        logF.clear();
+                        passF.clear();
+                    } else {
+                        textInGUI("Registration aborted, such login has already exists");
+                    }
+                }
             }
         });
         t.setDaemon(true);
@@ -76,8 +76,11 @@ public class AuthController implements Initializable{
     public void logIn(){
         if (logF.getLength() > 0 && passF.getLength() > 0){
             Network.sendObject(new AuthRequest(logF.getText(), passF.getText()));
-            logF.clear();
-            passF.clear();
+
+            Platform.runLater(() -> {
+                logF.clear();
+                passF.clear();
+            });
         }
     }
 
