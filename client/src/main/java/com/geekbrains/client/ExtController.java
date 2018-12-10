@@ -48,10 +48,7 @@ public class ExtController {
 
                 in.read(arrLastPartData);
 
-                //out.writeObject(new FileBigObject(fileName, arrLastPartData, ipart, partCount, hash, fileSize));
                 Network.sendObject(new FileBigObject(fileName, arrLastPartData, ipart, partCount, hash, fileSize));
-
-                //out.writeObject(new BigDataInfo("Over", fileName));
                 Network.sendObject(new BigDataInfo("Over", fileName));
 
                 in.close();

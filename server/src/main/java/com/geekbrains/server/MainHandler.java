@@ -23,7 +23,6 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
     public void setUserName(String userName) {
         this.userName = userName;
     }
-    private static final int MAX_OBJ_SIZE = 1024 * 1024 * 5;
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object income) throws Exception {
@@ -39,14 +38,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
 
             if (income instanceof FileRequest) {
                 FileRequest fr = (FileRequest) income;
-                if (Files.exists(Paths.get("server_storage/" + userName + "/" + fr.getFilename()))) {
-                    if (Paths.get("server_storage/" + userName + "/" + fr.getFilename()).toFile().length() > MAX_OBJ_SIZE){
-                        ctx.pipeline().get(BigDataHandler.class).sendBigDataToClient(fr, ctx);
-                    } else {
-                    FileObject fm = new FileObject(Paths.get("server_storage/" + userName + "/" + fr.getFilename()));
-                    ctx.writeAndFlush(fm);
-                    }
-                }
+                ctx.pipeline().get(BigDataHandler.class).sendDataToClient(fr, ctx);
             }
 
             if (income instanceof FilesListRequest){

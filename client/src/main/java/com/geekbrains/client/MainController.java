@@ -81,17 +81,21 @@ public class MainController implements Initializable {
                             byte[] zero = new byte[0];
                             Files.write(Paths.get("client_storage/"
                                     + info.getFileName()), zero, StandardOpenOption.CREATE);
-                            System.out.println("Create big file");
+                            System.out.println("Create big file with count of parts - " + info.getPartsCount());
+                            Network.sendObject(new BigDataInfo(1, info.getPartsCount(), "NextPart", info.getFileName()));
                         }
                         if (ExtController.bigDataHandler(info)) {
                             refreshServerFilesList();
                         }
                     }
                     if (income instanceof FileBigObject){
-                        System.out.println("Get part to append");
                         botc = (FileBigObject) income;
                         Files.write(Paths.get("client_storage/" + botc.getFileName()),
                                 botc.getData(), StandardOpenOption.APPEND);
+                        int nextPart = botc.getCurPart() + 1;
+                        if (nextPart <= botc.getPartCount()){
+                        Network.sendObject(new BigDataInfo(nextPart, botc.getPartCount(), "NextPart", botc.getFileName()));}
+                        else System.out.println("Get fully - " + botc.getCurPart() + " from / " + botc.getPartCount());
                     }
 
                 }

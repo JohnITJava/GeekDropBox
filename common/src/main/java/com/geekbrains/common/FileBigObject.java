@@ -43,6 +43,12 @@ public class FileBigObject extends AbstractObject {
         this.partCount = partCount;
         this.hash = hash;
         this.sizeFile = size;
+    }
 
+    public FileBigObject(String fileName, byte[] data, int curPart, int partCount) {
+        this.fileName = fileName;
+        this.data = data;
+        this.curPart = curPart;
+        this.partCount = partCount;
     }
 }
